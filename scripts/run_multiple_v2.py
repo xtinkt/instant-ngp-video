@@ -165,6 +165,13 @@ if __name__ == "__main__":
 					snapshot_path = default_snapshot_filename(scene_info)
 				testbed.load_snapshot(snapshot_path)
 				
+				# CRITICAL FIX: Sync density_grid_ema_step with training_step
+				# The snapshot preserves training_step but not density_grid_ema_step
+				# This can cause quality degradation due to desynchronization
+				training_step = getattr(testbed, 'training_step', 5000)  # Assume 5000 if not accessible
+				if hasattr(testbed.nerf, 'density_grid_ema_step'):
+					testbed.nerf.density_grid_ema_step = training_step
+				
 				current_model_id = new_model_id
 			
 			# Render frame (testbed keeps its "warmed up" state)
